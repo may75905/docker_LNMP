@@ -1,20 +1,43 @@
-FROM ubuntu:latest
+FROM php:7.1-fpm
 
-RUN apt-get update && apt-get install -y software-properties-common language-pack-en-base \
-    && LC_ALL=en_US.UTF-8 add-apt-repository -y ppa:ondrej/php \
-    && apt-get update \
-    && apt-get install -y php7.0 php7.0-fpm php7.0-mysql mcrypt php7.0-gd curl \
-       php7.0-curl php-redis php7.0-mbstring sendmail supervisor \
-    && mkdir /run/php \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# Install dependencies (needed for composer)
+RUN apt-get update -qq \
+	&& apt-get install -y -qq \
+		libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libmcrypt-dev \
+        libpng12-dev \
+        locales \
+        libicu-dev \
+        unzip \
+        git \
+        g++
 
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Set timezone
+RUN rm /etc/localtime \
+	&& ln -s /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
 
-RUN sed -i -e 's/listen = \/run\/php\/php7.0-fpm.sock/listen = 0.0.0.0:9000/g' /etc/php/7.0/fpm/pool.d/www.conf \
-    && sed -i -e 's/;daemonize = yes/daemonize = no/g' /etc/php/7.0/fpm/php-fpm.conf
+# Install locales
+RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
+	&& echo "nl_NL.UTF-8 UTF-8" >> /etc/locale.gen \
+	&& locale-gen
 
-WORKDIR /var/app
+# Type docker-php-ext-install to see available extensions
+RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install -j$(nproc) gd exif
+
+RUN docker-php-ext-configure intl
+RUN docker-php-ext-install -j$(nproc) mcrypt pdo pdo_mysql intl
+
+
+RUN echo "date.timezone = Europe/Amsterdam" > /usr/local/etc/php/conf.d/timezone.ini \
+	&& echo "short_open_tag = off" > /usr/local/etc/php/conf.d/short_open.ini
+
+# Install composer
+RUN php -r "readfile('https://getcomposer.org/installer');" > composer-setup.php \
+	&& php composer-setup.php --install-dir=/usr/local/bin/ --filename=composer \
+	&& php -r "unlink('composer-setup.php');"
 
 EXPOSE 9000
 
-CMD ["/usr/bin/supervisord"]
+CMD ["php-fpm"]
