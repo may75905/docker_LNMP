@@ -30,8 +30,8 @@ RUN docker-php-ext-configure intl
 RUN docker-php-ext-install -j$(nproc) mcrypt pdo pdo_mysql intl
 
 
-RUN echo "date.timezone = Europe/Amsterdam" > /usr/local/etc/php/conf.d/timezone.ini \
-	&& echo "short_open_tag = off" > /usr/local/etc/php/conf.d/short_open.ini
+RUN echo "date.timezone = Asia/Taipei" > /usr/local/etc/php/conf.d/timezone.ini \
+	&& echo "short_open_tag = on" > /usr/local/etc/php/conf.d/short_open.ini
 
 # Install composer
 RUN php -r "readfile('https://getcomposer.org/installer');" > composer-setup.php \

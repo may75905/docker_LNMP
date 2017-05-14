@@ -21,8 +21,9 @@ services:
           - fpm
       ports:
           - "8080:80"
+          - "9999:9999"
       volumes:
-          - ./app:/var/app
+          - ./nginx/conf:/etc/nginx/conf.d/
   fpm:
       build:
           context: ./fpm
