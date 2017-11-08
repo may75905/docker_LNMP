@@ -12,7 +12,7 @@ nginx:
     - php-fpm:fpm
 
 php-fpm:
-  build: ./conf/php/Dockerfile
+  build: .
   expose:
     - "9000"
   volumes:
