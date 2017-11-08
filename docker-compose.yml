@@ -12,7 +12,7 @@ nginx:
     - php-fpm:fpm
 
 php-fpm:
-  build: .
+  build: ./conf/php/Dockerfile
   expose:
     - "9000"
   volumes:
@@ -56,3 +56,13 @@ mongo:
   environment:
     - MONGODB_USERNAME=root
     - MONGODB_PASSWORD=123456
+
+mongo-express:
+  image: mongo-express
+  ports:
+  - "8081:8081"
+  links:
+  - mongo:mongo
+  environment:
+    - ME_CONFIG_BASICAUTH_USERNAME=root
+    - ME_CONFIG_BASICAUTH_PASSWORD=123456
