@@ -51,6 +51,8 @@ mongo:
   image: mongo:latest
   ports:
     - "27017:27017"
+  volumes:
+    - ./mongo:/data/db
   environment:
     - MONGODB_USERNAME=root
     - MONGODB_PASSWORD=123456
