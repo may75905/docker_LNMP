@@ -66,3 +66,103 @@ mongo-express:
   environment:
     - ME_CONFIG_BASICAUTH_USERNAME=root
     - ME_CONFIG_BASICAUTH_PASSWORD=123456
+
+
+zoo1:
+    image: zookeeper:latest
+    restart: always
+    hostname: zoo1
+    container_name: zoo1
+    ports:
+      - "2181:2181"
+#    environment:
+#      ZOO_MY_ID: 1
+#      ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+
+
+kafka1:
+ image: wurstmeister/kafka:latest
+ ports:
+  - "9092:9092"
+
+ links:
+  - zoo1:zk
+#  - zoo2:zk
+#  - zoo3:zk
+ environment:
+    KAFKA_BROKER_ID: 1
+    KAFKA_ADVERTISED_HOST_NAME: "kafka"
+    KAFKA_ADVERTISED_PORT: "9092"
+    KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181"
+
+kafka2:
+ image: wurstmeister/kafka:latest
+ ports:
+ - "9093:9092"
+ links:
+ - zoo1:zk
+# - zoo2:zk
+ environment:
+    KAFKA_BROKER_ID: 2
+    KAFKA_ADVERTISED_HOST_NAME: "kafka"
+    KAFKA_ADVERTISED_PORT: "9093"
+    KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181"
+
+
+kafka3:
+ image: wurstmeister/kafka:latest
+ ports:
+ - "9094:9092"
+ links:
+ - zoo1:zk
+ environment:
+    KAFKA_BROKER_ID: 3
+    KAFKA_ADVERTISED_HOST_NAME: "kafka"
+    KAFKA_ADVERTISED_PORT: "9094"
+    KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181"
+
+
+
+#producer:
+#  image: producer
+#    ports:
+#      - "8080:8080"
+#      - "5005:5005"
+#    tty: true
+#    links:
+#      - kafka:kafka
+#    depends_on:
+#      - kafka
+#    command: bash -c "/app/docker-scripts/wait-for-it.sh zk:2181 -t 90 &&  /app/docker-scripts/wait-for-it.sh kafka:9092 -t 90"
+#
+#consumer:
+#    image: consumer
+#    ports:
+#      - "8081:8081"
+#    tty: true
+#    links:
+#      - kafka:kafka
+#    depends_on:
+#      - kafka
+#    command: bash -c "/app/docker-scripts/wait-for-it.sh zk:2181 -t 90 &&  /app/docker-scripts/wait-for-it.sh kafka:9092 -t 90"
+
+
+
+
+kafka-manager:
+  image: sheepkiller/kafka-manager:latest
+  ports:
+    - "9000:9000"
+  links:
+    - zoo1
+#    - zoo2
+#    - zoo3
+    - kafka1
+    - kafka2
+    - kafka3
+  environment:
+#    ZK_HOSTS: zoo1:2181,zoo2:2182,zoo3:2183
+    ZK_HOSTS: zoo1:2181
+    APPLICATION_SECRET: letmein
+    KM_ARGS: -Djava.net.preferIPv4Stack=true
+    
