@@ -1,7 +1,7 @@
 nginx:
   image: nginx:alpine
   ports:
-    - "80:80"
+    - "8888:80"
     - "443:443"
   volumes:
     - ./www/:/var/www/html/:rw
