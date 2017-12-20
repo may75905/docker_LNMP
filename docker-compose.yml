@@ -23,7 +23,7 @@ php-fpm:
   links:
     - db:db
     - redis:redis
-
+    - mongo:mongo
 myadmin:
       image: phpmyadmin/phpmyadmin
       links:
